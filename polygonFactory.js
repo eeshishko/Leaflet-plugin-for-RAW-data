@@ -2,12 +2,6 @@
  * Created by EvgenySH on 18.03.17.
  */
 
-/**
- * This function is used instead of loading color scale (yet)
- */
-
-
-
 function getRandomColor() {
     var letters = '0123456789ABCDEF';
     var color = '#';
@@ -28,11 +22,12 @@ function createRectangle(latDiff, lngDiff, latLeft, lngLeft, i, j) {
 
     var latlngs = [[lat1, lng1], [lat2, lng2]];
 
-    return L.rectangle(latlngs,{weight: 0,
-        color: getRandomColor(),
-        opacity: 0.1,
-        fillColor: getRandomColor(),
-        fillOpacity: 1})
+    // return L.rectangle(latlngs,{weight: 0,
+    //     color: getRandomColor(),
+    //     opacity: 0.1,
+    //     fillColor: getRandomColor(),
+    //     fillOpacity: 1})
+    return L.imageOverlay('images/skobbler-maps.png', latlngs)
 }
 
 /**
@@ -68,6 +63,10 @@ function createRandomValues(max, count) {
     return rawData;
 }
 
+var renderRawData = function (array, shape) {
+  var canvas = L.DomUtil.create('canvas');
+
+};
 
 
 

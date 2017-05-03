@@ -12,13 +12,12 @@ L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=p
     id: 'mapbox.light'
 }).addTo(map);
 
-function onMapClick(e) {
-    alert("You clicked the map at " + e.latlng);
-}
-// var plugin = RasterPlugin();
-// plugin.createRandomValues(10, 20 * 20);
+map.on('click', function () {
+    alert('Map grid layer tile size: ');
+});
 
-var myRectangles = createGeoRectangles(60, 60,  32, -120, 39.73, -105);
+
+/*var myRectangles = createGeoRectangles(60, 60,  32, -120, 39.73, -105);
 var rawData = createRandomValues(10, 360 * 180);
 
 for (i = 0; i < myRectangles.length; i++) {
@@ -28,18 +27,11 @@ for (i = 0; i < myRectangles.length; i++) {
     myRectangles[i].on('click', function () {
         alert("Value of this rectangle is " + value);
     })
-}
+}*/
 
-map.fitBounds(myRectangles[1].getBounds());
+// map.fitBounds(myRectangles[1].getBounds());
 
-// // zoom the map to the polygon
-// map.fitBounds(polygon.getBounds());
 
-// L.geoJSON(rectangle, {
-//     style: function (feature) { // Setting styles for each polygon
-//         return feature.properties && feature.properties.style;
-//     }
-// }).addTo(map);
 
 
 
