@@ -63,6 +63,19 @@ function createRandomValues(max, count) {
     return rawData;
 }
 
+function addLayer() {
+    var input = document.getElementById("layerURL").value;
+
+    if (input == "")
+        return;
+
+    // Adding  URL to table
+    var table = document.getElementById("addedLayers");
+    var row = table.insertRow(table.size);
+
+    row.insertCell(0).innerHTML = input
+}
+
 var renderRawData = function (array, shape) {
   var canvas = L.DomUtil.create('canvas');
 

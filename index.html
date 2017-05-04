@@ -3,17 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="leaflet/leaflet.css"/>
-    <title>PLUGIN!!!!</title>
+    <title>Leaflet plugin</title>
     <style type="text/css">
-        #mapid {height: 600px;
-            width: auto;}
+        #mapid {height: 450px;
+            width: 65%;}
     </style>
 </head>
 <body>
 <script src="leaflet/leaflet-src.js"></script>
 <script src="polygonFactory.js"></script>
-<script src="Render.js"></script>
-<div id="mapid" style="margin-bottom: 20px; margin-top: 20px"></div>
+<div id="mapid" style="float: right; margin-right: 5px; margin-top: 10px;"></div>
+<div class ="leftMenu" style="float: left; margin-left: 10px; width: 30%;">
+    <p>Color gradient: </p>
+    <img id="gradient" style="height: 50px; width: 100%" src="images/gradient.jpg">
+    <p style="float: left; width: 25%">Layer URL:</p>
+    <input type="text" id="layerURL" style="float: right; width: 70%; margin-top: 5%">
+    <button id="addLayerButton" onclick="addLayer()" style="height: 5%; width: 100%">Add layer</button>
+    <p>Added Layers: </p>
+    <div style="height: 240px; overflow: auto">
+    <table id="addedLayers" border="1" style="width: 100%;">
+        <thead>
+        <tr>
+            <th><span class="text">URLs of Layers</span></th>
+        </tr>
+        </thead>
+    </table>
+    </div>
+</div>
+<br>
+<div class="operationsBlock">
+    <p>Operations: </p>
+</div>
+
 <script src="script.js"></script>
 </body>
 </html>

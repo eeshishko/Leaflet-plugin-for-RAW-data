@@ -2,7 +2,7 @@
  * Created by EvgenySH on 17.03.17.
  */
 
-var map = L.map('mapid').setView([37, -109.05], 13);
+var map = L.map('mapid').setView([55.751244, 37.618423], 10);
 
 L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
     maxZoom: 18,
