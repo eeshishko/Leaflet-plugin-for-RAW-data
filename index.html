@@ -2,20 +2,21 @@
 <html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="leaflet/leaflet.css"/>
+    <link rel="stylesheet" href="libs/leaflet/leaflet.css"/>
     <title>Leaflet plugin</title>
+    <script src="libs/leaflet/leaflet-src.js"></script>
+    <script src="libs/geotiff.min.js"></script>
+    <script src="libs/raster-marching-squares.min.js"></script>
+    <script src="plugin.js"></script>
     <style type="text/css">
-        #mapid {height: 450px;
+        #map {height: 450px;
             width: 65%;}
     </style>
 </head>
 <body>
-<script src="leaflet/leaflet-src.js"></script>
-<script src="polygonFactory.js"></script>
-<div id="mapid" style="float: right; margin-right: 5px; margin-top: 10px;"></div>
+<div id="map" style="float: right; margin-right: 5px; margin-top: 10px;"></div>
+<script src="L.map.init.js"></script>
 <div class ="leftMenu" style="float: left; margin-left: 10px; width: 30%;">
-    <p>Color gradient: </p>
-    <img id="gradient" style="height: 50px; width: 100%" src="images/gradient.jpg">
     <p style="float: left; width: 25%">Layer URL:</p>
     <input type="text" id="layerURL" style="float: right; width: 70%; margin-top: 5%">
     <button id="addLayerButton" onclick="addLayer()" style="height: 5%; width: 100%">Add layer</button>
@@ -25,6 +26,8 @@
         <thead>
         <tr>
             <th><span class="text">URLs of Layers</span></th>
+            <th><span class="text">Del</span></th>
+            <th><span class="text">Color scales</span></th>
         </tr>
         </thead>
     </table>
@@ -35,6 +38,5 @@
     <p>Operations: </p>
 </div>
 
-<script src="script.js"></script>
 </body>
 </html>
