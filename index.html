@@ -6,6 +6,7 @@
     <title>Leaflet plugin</title>
     <script src="libs/leaflet/leaflet-src.js"></script>
     <script src="libs/geotiff.min.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
     <script src="libs/raster-marching-squares.min.js"></script>
     <script src="plugin.js"></script>
     <style type="text/css">
@@ -19,7 +20,7 @@
 <div class ="leftMenu" style="float: left; margin-left: 10px; width: 30%;">
     <p style="float: left; width: 25%">Layer URL:</p>
     <input type="text" id="layerURL" style="float: right; width: 70%; margin-top: 5%">
-    <button id="addLayerButton" onclick="addLayer()" style="height: 5%; width: 100%">Add layer</button>
+    <button id="addLayerButton" onclick="addNewLayer()" style="height: 5%; width: 100%">Add layer</button>
     <p>Added Layers: </p>
     <div style="height: 240px; overflow: auto">
     <table id="addedLayers" border="1" style="width: 100%;">
