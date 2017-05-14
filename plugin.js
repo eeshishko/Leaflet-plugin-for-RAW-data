@@ -3,15 +3,12 @@
  */
 
 function addLayer () {
-    var url = document.getElementById("layerURL").value;
+    var url = document.getElementById('layerURL');
 
     if (url == "")
         return;
 
     var xhr = new XMLHttpRequest();
-    var projection = d3.geoAzimuthalEqualArea()
-        .rotate([-55.5, -24])
-        .scale(1100);
 
     xhr.open('GET', url, true);
     xhr.responseType = 'arraybuffer';
@@ -143,39 +140,7 @@ function addLayer () {
     xhr.send();
 }
 
-/**
- * Adding new layer to table with all needed elements
- * @param url
- * @param gradient
- */
-function addRowWith(url, gradient) {
-    // Adding  URL to table
-    var table = document.getElementById("addedLayers");
-    var size = table.size;
-    var row = table.insertRow(size);
 
-    row.insertCell(0).innerHTML = url;
-
-    // Creating delete button
-    var btn = document.createElement("BUTTON");
-    var t = document.createTextNode("-");
-    btn.appendChild(t);
-
-    // Removing from table action
-    btn.onclick = function () {
-        table.deleteRow(size + 1);
-        layerControl.removeLayer(layers[url]);
-        delete layers[url];
-    };
-
-    // Adding button in cell
-    row.insertCell(1).appendChild(btn);
-
-    // Adding color gradient
-    gradient.style.height = "40px";
-    gradient.style.width = "120px";
-    row.insertCell(2).appendChild(gradient);
-}
 
 
 
