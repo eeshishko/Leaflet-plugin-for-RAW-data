@@ -2,18 +2,27 @@
  * Created by EvgenySH on 14.05.17.
  */
 
-
-
 function RasterMap(leafletMap, tileLayer) {
     this.map = leafletMap;
     this.rasterLayers = {};
     var layerControl = L.control.layers();
+    var scaleWidth = 256;
+    var width = 1000,
+        height = 1000;
 
-    function RasterLayer(name, image, rasterData, contexColorScale, geoTransform) {
+    /**
+     * Represents raster layer object
+     * @param name - name of the layer
+     * @param image - image data on the Leaflet map
+     * @param rasterData - raster data on this layer
+     * @param canvasColorScale - canvas to render raster values
+     * @param geoTransform - matrix to transform pixels ot latlng coords
+     */
+    function RasterLayer(name, image, rasterData, canvasColorScale, geoTransform) {
         this.name = name;
         this.image = image;
         this.rasterData = rasterData;
-        this.contextColorScale = contexColorScale;
+        this.canvasColorScale = canvasColorScale;
         this.interpolated = false;
         this.processTime = undefined;
         this.tiffWidth = undefined;
@@ -28,46 +37,47 @@ function RasterMap(leafletMap, tileLayer) {
 
                 L.popup()
                     .setLatLng(e.latlng)
-                    .setContent("Value: " + value.toFixed(1))
+                    .setContent(name + "<br>. Value: " + value.toFixed(1) + "<br>" + "Coordinates: " + e.latlng)
                     .openOn(leafletMap);
             };
-            leafletMap.on('click', clickFunc);
 
             // Adding control of layer
             layerControl.addOverlay(this.image, name);
+            leafletMap.flyTo(this.image.getBounds().getCenter(), 6);
+
+            leafletMap.off('click');
+            leafletMap.on('click', clickFunc);
         };
 
-        // first initialization
+        // First initialization
         this.initLayer();
 
-        this.switchInterpolation = function () {
+        /**
+         * This function draws layer according to parameters of this layer
+         */
+        this.drawLayer = function () {
             leafletMap.removeLayer(this.image);
             layerControl.removeLayer(this.image);
 
-            var width = 680,
-                height = 600;
             var canvasRaster = document.createElement('canvas');
             canvasRaster.width = width;
             canvasRaster.height = height;
             canvasRaster.style.display = "none";
-
-            // document.body.appendChild(canvasRaster);
 
             var contextRaster = canvasRaster.getContext("2d");
 
             var id = contextRaster.createImageData(width, height);
             var data = id.data;
             var pos = 0;
-            var scaleWidth = 256;
 
             var invGeoTransform = [-geoTransform[0] / geoTransform[1], 1 / geoTransform[1], 0, -geoTransform[3] / geoTransform[5], 0, 1 / geoTransform[5]];
-            var csImageData = contexColorScale.getImageData(0, 0, scaleWidth - 1, 1).data;
+            var csImageData = this.canvasColorScale.getContext("2d").getImageData(0, 0, scaleWidth - 1, 1).data;
 
             for (var j = 0; j < height; j++) {
                 for (var i = 0; i < width; i++) {
                     var pointCoords = [geoTransform[0] + i * this.tiffWidth * geoTransform[1] / width, geoTransform[3] + j * this.tiffHeight * geoTransform[5] / height];
 
-                    if (!this.interpolated) {
+                    if (this.interpolated) {
                         var px = invGeoTransform[0] + pointCoords[0] * invGeoTransform[1];
                         var py = invGeoTransform[3] + pointCoords[1] * invGeoTransform[5];
 
@@ -136,7 +146,15 @@ function RasterMap(leafletMap, tileLayer) {
     tileLayer.addTo(this.map); // Base layer
     layerControl.addTo(this.map); // Layer Controller
 
-    this.addLayer = function (url, name, response, colorScaleName) {
+    /**
+     * This function loads raster data from response, creates and add layer to leaflet map
+     * @param name - Name of the layer
+     * @param response - array of bytes of GeoTIFF file
+     * @param colorScaleName - name of color scale to render
+     * @param rasterChannel - index of raster channel in file which will be represented
+     * @returns color scale image for created layer
+     */
+    this.addLayer = function (name, response, colorScaleName, rasterChannel) {
 
         var t0 = new Date().getTime();
         var tiff = GeoTIFF.parse(response);
@@ -153,38 +171,18 @@ function RasterMap(leafletMap, tileLayer) {
         for (var j = 0; j < image.getHeight(); j++) {
             rasterData[j] = new Array(image.getWidth());
             for (var i = 0; i < image.getWidth(); i++) {
-                rasterData[j][i] = rasters[1][i + j * image.getWidth()];
+                rasterData[j][i] = rasters[rasterChannel][i + j * image.getWidth()];
             }
         }
 
-        //Creating the color scale https://github.com/santilland/plotty/blob/master/src/plotty.js
-        var cs_def = colorscales[colorScaleName];
-        var scaleWidth = 256;
-        var canvasColorScale = document.createElement('canvas');
-        canvasColorScale.width = scaleWidth;
-        canvasColorScale.height = 1;
-        canvasColorScale.style.display = "none";
+        var canvasColorScale = this.createCanvasColorScale(colorScaleName);
 
-        document.body.appendChild(canvasColorScale);
-
-        var contextColorScale = canvasColorScale.getContext("2d");
-        var gradient = contextColorScale.createLinearGradient(0, 0, scaleWidth, 1);
-
-        for (var i = 0; i < cs_def.colors.length; ++i) {
-            gradient.addColorStop(cs_def.positions[i], cs_def.colors[i]);
-        }
-        contextColorScale.fillStyle = gradient;
-        contextColorScale.fillRect(0, 0, scaleWidth, 1);
-
-        var csImageData = contextColorScale.getImageData(0, 0, scaleWidth - 1, 1).data;
+        var csImageData = canvasColorScale.getContext("2d").getImageData(0, 0, scaleWidth - 1, 1).data;
 
         var colorScale = new Image();
         colorScale.src = canvasColorScale.toDataURL();
 
         //Calculating the image
-        var width = 680,
-            height = 600;
-
         var canvasRaster = document.createElement('canvas');
         canvasRaster.width = width;
         canvasRaster.height = height;
@@ -199,7 +197,8 @@ function RasterMap(leafletMap, tileLayer) {
         var pos = 0;
         for (var j = 0; j < height; j++) {
             for (var i = 0; i < width; i++) {
-                var pointCoords = [geoTransform[0] + i * tiffWidth * geoTransform[1] / width, geoTransform[3] + j * tiffHeight * geoTransform[5] / height];
+                var pointCoords = [geoTransform[0] + i * tiffWidth * geoTransform[1] / width,
+                                   geoTransform[3] + j * tiffHeight * geoTransform[5] / height];
 
                 var px = Math.floor(invGeoTransform[0] + pointCoords[0] * invGeoTransform[1]);
                 var py = Math.floor(invGeoTransform[3] + pointCoords[1] * invGeoTransform[5]);
@@ -218,38 +217,6 @@ function RasterMap(leafletMap, tileLayer) {
                     data[pos+3]   = alpha;
                     pos = pos + 4
                 }
-                // var px = invGeoTransform[0] + pointCoords[0] * invGeoTransform[1];
-                // var py = invGeoTransform[3] + pointCoords[1] * invGeoTransform[5];
-                //
-                // var value;
-                // if (Math.floor(px) >= 0 && Math.ceil(px) < image.getWidth() && Math.floor(py) >= 0 && Math.ceil(py) < image.getHeight()) {
-                //     //https://en.wikipedia.org/wiki/Bilinear_interpolation
-                //     var dist1 = (Math.ceil(px) - px) * (Math.ceil(py) - py);
-                //     var dist2 = (px - Math.floor(px)) * (Math.ceil(py) - py);
-                //     var dist3 = (Math.ceil(px) - px) * (py - Math.floor(py));
-                //     var dist4 = (px - Math.floor(px)) * (py - Math.floor(py));
-                //     if (dist1 != 0 || dist2 != 0 || dist3 != 0 || dist4 != 0) {
-                //         value = rasterData[Math.floor(py)][Math.floor(px)] * dist1 +
-                //             rasterData[Math.floor(py)][Math.ceil(px)] * dist2 +
-                //             rasterData[Math.ceil(py)][Math.floor(px)] * dist3 +
-                //             rasterData[Math.ceil(py)][Math.ceil(px)] * dist4;
-                //     } else {
-                //         value = rasterData[Math.floor(py)][Math.floor(px)];
-                //     }
-                // } else {
-                //     value = -999;
-                // }
-                // var c = Math.round((scaleWidth - 1) * ((value - 14) / 24));
-                // var alpha = 200;
-                // if (c < 0 || c > (scaleWidth - 1)) {
-                //     alpha = 0;
-                // }
-                // data[pos] = csImageData[c * 4];
-                // data[pos + 1] = csImageData[c * 4 + 1];
-                // data[pos + 2] = csImageData[c * 4 + 2];
-                // data[pos + 3] = alpha;
-                // pos = pos + 4
-
 
             }
         }
@@ -260,7 +227,7 @@ function RasterMap(leafletMap, tileLayer) {
             opacity: 0.5
         });
 
-        this.rasterLayers[name] = new RasterLayer(name, imageLayer, rasterData, contextColorScale, geoTransform);
+        this.rasterLayers[name] = new RasterLayer(name, imageLayer, rasterData, canvasColorScale, geoTransform);
 
         var t1 = new Date().getTime();
         this.rasterLayers[name].processTime = (t1 - t0) / 1000;
@@ -270,15 +237,52 @@ function RasterMap(leafletMap, tileLayer) {
         return colorScale;
     };
 
+    /**
+     * Remove layer from the map and layer controller
+     * @param name - name of layer to remove
+     */
     this.removeLayer = function (name) {
         this.map.removeLayer(this.rasterLayers[name].image);
         layerControl.removeLayer(this.rasterLayers[name].image);
         this.rasterLayers[name] = undefined;
     };
 
+    /**
+     * Checks if such name exists or not
+     * @param name
+     * @returns {boolean}
+     */
     this.isLayerExist = function (name) {
         return this.rasterLayers[name] != undefined;
-    }
+    };
+
+    /**
+     * Creates canvas for color scale
+     * @param colorScaleName - name in the list of color scales
+     * @returns
+     */
+    this.createCanvasColorScale = function (colorScaleName) {
+        var cs_def = colorscales[colorScaleName];
+        var canvasColorScale = document.createElement('canvas');
+        canvasColorScale.width = scaleWidth;
+        canvasColorScale.height = 1;
+        canvasColorScale.style.display = "none";
+
+        //document.body.appendChild(canvasColorScale);
+
+        var contextColorScale = canvasColorScale.getContext("2d");
+        var gradient = contextColorScale.createLinearGradient(0, 0, scaleWidth, 1);
+
+        for (var i = 0; i < cs_def.colors.length; ++i) {
+            gradient.addColorStop(cs_def.positions[i], cs_def.colors[i]);
+        }
+        contextColorScale.fillStyle = gradient;
+        contextColorScale.fillRect(0, 0, scaleWidth, 1);
+
+        return canvasColorScale;
+    };
+
+
 }
 
 // Colorscale definitions from https://github.com/santilland/plotty/blob/master/src/plotty.js
