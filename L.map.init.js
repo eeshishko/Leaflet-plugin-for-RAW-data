@@ -51,22 +51,26 @@ function addClick(url, name, rasterChannel) {
         return;
     }
 
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.responseType = 'arraybuffer';
+    try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.responseType = 'arraybuffer';
 
-    var colorScale = undefined;
-    xhr.onload = function (e) {
-        try {
-            var colorScaleName = select.options[select.selectedIndex].value;
-            colorScale = rasterMap.addLayer(name, this.response, colorScaleName, rasterChannel);
-            if (colorScale != undefined)
-                addRowWith(name, colorScale, rasterMap.rasterLayers[name].processTime);
-        } catch (error) {
-            alert("Error: the layer hasn't been added.");
-        }
-    };
-    xhr.send();
+        var colorScale = undefined;
+        xhr.onload = function (e) {
+            try {
+                var colorScaleName = select.options[select.selectedIndex].value;
+                colorScale = rasterMap.addLayer(name, this.response, colorScaleName, rasterChannel);
+                if (colorScale != undefined)
+                    addRowWith(name, colorScale, rasterMap.rasterLayers[name].processTime);
+            } catch (error) {
+                alert("Error: the layer hasn't been added.");
+            }
+        };
+        xhr.send();
+    } catch (error) {
+        alert("Error: the file hasn't been uploaded.");
+    }
 }
 
 /**
