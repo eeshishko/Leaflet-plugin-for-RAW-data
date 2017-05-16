@@ -18,7 +18,7 @@ function RasterMap(leafletMap, tileLayer) {
      * @param canvasColorScale - canvas to render raster values
      * @param geoTransform - matrix to transform pixels ot latlng coords
      */
-    function RasterLayer(name, image, rasterData, canvasColorScale, geoTransform) {
+    function RasterLayer(name, image, rasterData, canvasColorScale, geoTransform, domain) {
         this.name = name;
         this.image = image;
         this.rasterData = rasterData;
@@ -37,7 +37,7 @@ function RasterMap(leafletMap, tileLayer) {
 
                 L.popup()
                     .setLatLng(e.latlng)
-                    .setContent(name + "<br>. Value: " + value.toFixed(1) + "<br>" + "Coordinates: " + e.latlng)
+                    .setContent(name + "<br>Value: " + value.toFixed(1) + "<br>" + "Coordinates: " + e.latlng)
                     .openOn(leafletMap);
             };
 
@@ -98,7 +98,7 @@ function RasterMap(leafletMap, tileLayer) {
                         } else {
                             value = -999;
                         }
-                        var c = Math.round((scaleWidth - 1) * ((value - 14) / 24));
+                        var c = Math.round((scaleWidth - 1) * ((value - domain[0]) / (domain[1] - domain[0])));
                         var alpha = 200;
                         if (c < 0 || c > (scaleWidth - 1)) {
                             alpha = 0;
@@ -115,7 +115,7 @@ function RasterMap(leafletMap, tileLayer) {
                         if (Math.floor(px) >= 0 && Math.ceil(px) < this.tiffWidth && Math.floor(py) >= 0 && Math.ceil(py) < this.tiffHeight) {
                             var value = rasterData[py][px];
 
-                            var c = Math.round((scaleWidth - 1) * ((value - 14) / 24));
+                            var c = Math.round((scaleWidth - 1) * ((value - domain[0]) / (domain[1] - domain[0])));
                             var alpha = 200;
                             if (c < 0 || c > (scaleWidth - 1)) {
                                 alpha = 0;
@@ -166,12 +166,17 @@ function RasterMap(leafletMap, tileLayer) {
         var pixelScale = image.getFileDirectory().ModelPixelScale;
         var geoTransform = [tiepoint.x, pixelScale[0], 0, tiepoint.y, 0, -1 * pixelScale[1]];
         var invGeoTransform = [-geoTransform[0] / geoTransform[1], 1 / geoTransform[1], 0, -geoTransform[3] / geoTransform[5], 0, 1 / geoTransform[5]];
+        var domain = [rasters[rasterChannel][0], rasters[rasterChannel][0]]; // min and max values of data
 
         var rasterData = new Array(image.getHeight());
         for (var j = 0; j < image.getHeight(); j++) {
             rasterData[j] = new Array(image.getWidth());
             for (var i = 0; i < image.getWidth(); i++) {
                 rasterData[j][i] = rasters[rasterChannel][i + j * image.getWidth()];
+                if (rasterData[j][i] < domain[0])
+                    domain[0] = rasterData[j][i];
+                if (rasterData[j][i] > domain[1])
+                    domain[1] = rasterData[j][i];
             }
         }
 
@@ -206,7 +211,7 @@ function RasterMap(leafletMap, tileLayer) {
                 if(Math.floor(px) >= 0 && Math.ceil(px) < image.getWidth() && Math.floor(py) >= 0 && Math.ceil(py) < image.getHeight()){
                     var value = rasterData[py][px];
 
-                    var c = Math.round((scaleWidth-1) * ((value - 14)/24));
+                    var c = Math.round((scaleWidth-1) * ((value - domain[0])/(domain[1] - domain[0])));
                     var alpha = 200;
                     if (c<0 || c > (scaleWidth-1)){
                         alpha = 0;
@@ -227,7 +232,7 @@ function RasterMap(leafletMap, tileLayer) {
             opacity: 0.5
         });
 
-        this.rasterLayers[name] = new RasterLayer(name, imageLayer, rasterData, canvasColorScale, geoTransform);
+        this.rasterLayers[name] = new RasterLayer(name, imageLayer, rasterData, canvasColorScale, geoTransform, domain);
 
         var t1 = new Date().getTime();
         this.rasterLayers[name].processTime = (t1 - t0) / 1000;
