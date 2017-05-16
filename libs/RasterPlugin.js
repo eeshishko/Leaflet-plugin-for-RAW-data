@@ -17,6 +17,7 @@ function RasterMap(leafletMap, tileLayer) {
      * @param rasterData - raster data on this layer
      * @param canvasColorScale - canvas to render raster values
      * @param geoTransform - matrix to transform pixels ot latlng coords
+     * @param domain - min and max raster values
      */
     function RasterLayer(name, image, rasterData, canvasColorScale, geoTransform, domain) {
         this.name = name;
