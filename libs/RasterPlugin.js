@@ -44,7 +44,7 @@ function RasterMap(leafletMap, tileLayer) {
 
             // Adding control of layer
             layerControl.addOverlay(this.image, name);
-            leafletMap.flyTo(this.image.getBounds().getCenter(), 6);
+            leafletMap.flyTo(this.image.getBounds().getCenter());
 
             leafletMap.off('click');
             leafletMap.on('click', clickFunc);
@@ -273,8 +273,6 @@ function RasterMap(leafletMap, tileLayer) {
         canvasColorScale.width = scaleWidth;
         canvasColorScale.height = 1;
         canvasColorScale.style.display = "none";
-
-        //document.body.appendChild(canvasColorScale);
 
         var contextColorScale = canvasColorScale.getContext("2d");
         var gradient = contextColorScale.createLinearGradient(0, 0, scaleWidth, 1);
