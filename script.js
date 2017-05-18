@@ -124,7 +124,7 @@ function addRowWith(name, colorScale, time) {
         var selectedScaleName = colorSelect.options[colorSelect.selectedIndex].value;
         rasterMap.rasterLayers[name].canvasColorScale = rasterMap.createCanvasColorScale(selectedScaleName);
         colorScale.src = rasterMap.rasterLayers[name].canvasColorScale.toDataURL();
-        changeBtn.style.backgroundColor = "#00c110"; // Changes are not up to date
+        changeBtn.style.backgroundColor = "#b5d128"; // Changes are not up to date
     };
     colorSelect.selectedIndex = select.selectedIndex;
 
